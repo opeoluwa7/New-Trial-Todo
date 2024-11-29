@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "256373636242",
+    "project_id": "minimal-chat-app-eb8fc",
+    "storage_bucket": "minimal-chat-app-eb8fc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256373636242:android:43fb345a91771a4939fa4b",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbNe0nShNr0pk9gQF-2SrPTcqxikArVms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
