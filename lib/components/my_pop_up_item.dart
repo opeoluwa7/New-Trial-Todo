@@ -8,6 +8,10 @@ class MyPopUpItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuItem(
-        child: TextButton(onPressed: onPressed, child: Text(text)));
+      child: TextButton(
+        onPressed: onPressed,
+        child: Text(text),
+      ),
+    );
   }
 }

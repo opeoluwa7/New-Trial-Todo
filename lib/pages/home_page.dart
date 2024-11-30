@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 //import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/components/my_dialog_box.dart';
-import 'package:myapp/components/my_list_tile.dart';
+import 'package:myapp/components/my_checkbox_list_tile.dart';
 import 'package:myapp/providers/auth_provider.dart';
 //import 'package:myapp/model/todo_model.dart';
 //import 'package:myapp/model/todo_model.dart';
@@ -67,6 +67,8 @@ class _HomePageState extends State<HomePage> {
                       child: TextButton(
                           onPressed: () async {
                             Navigator.pop(context);
+                            Navigator.pushNamedAndRemoveUntil(
+                                context, '/', (route) => false);
                             await baseAuth.signOut();
                           },
                           child: Text(

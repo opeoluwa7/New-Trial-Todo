@@ -8,7 +8,8 @@ class DbProvider {
 
   Future createUser(UserModel user) async {
     final Map<String, dynamic> userData = user.toMap();
-    await users.add(userData);
+    //await users.add(userData);
+    await users.doc(user.id).set(userData);
   }
 
   /*Stream<QuerySnapshot> fetchUsers() {
@@ -22,8 +23,7 @@ class DbProvider {
   }*/
 
   Future<UserModel?> fetchUserData(String userId) async {
-    final DocumentSnapshot snapshot =
-        await users.doc(userId).get();
+    final DocumentSnapshot snapshot = await users.doc(userId).get();
 
     if (snapshot.exists) {
       Map<String, dynamic> userData = snapshot.data() as Map<String, dynamic>;
