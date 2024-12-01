@@ -17,11 +17,27 @@ class Todo {
     };
   }
 
-  factory Todo.fromMap(Map<String, dynamic> map) {
+  // Define the copyWith method
+  //This method gives the power to either modify one of the keys or none at all, like selected Index power
+  Todo copyWith({
+    String? id,
+    String? title,
+    bool? isCompleted,
+  }) {
     return Todo(
-      id: map['id'] ?? 'N/A',
-      title: map['title'] ?? 'N/A',
-      isCompleted: map['isCompleted'] ?? false,
+      id: id ?? this.id,
+      title: title ?? this.title,
+      isCompleted: isCompleted ?? this.isCompleted,
     );
   }
+
+  factory Todo.fromMap(Map<String, dynamic> map) {
+    return Todo(
+      id: map['id'],
+      title: map['title'],
+      isCompleted: map['isCompleted'],
+    );
+  }
+
+  
 }

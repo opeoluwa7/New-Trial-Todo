@@ -1,22 +1,23 @@
-//import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/model/todo_model.dart';
 import 'package:myapp/providers/db_provider.dart';
+import 'package:provider/provider.dart';
 
 class MyDialogBox extends StatefulWidget {
   const MyDialogBox({
     super.key,
     required this.controller,
-    this.taskId,
+    required this.task,
   });
   final TextEditingController controller;
-  final String? taskId;
+  final Todo task;
   @override
   State<MyDialogBox> createState() => _MyDialogBoxState();
 }
 
 class _MyDialogBoxState extends State<MyDialogBox> {
-  final DbProvider dbProvider = DbProvider();
+  final currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -32,22 +33,7 @@ class _MyDialogBoxState extends State<MyDialogBox> {
               ),
             ),
             IconButton(
-              onPressed: () {
-                if (widget.taskId == null || widget.taskId!.isEmpty) {
-                  Todo todo =
-                      Todo(id: '', title: widget.controller.text.trim());
-                  dbProvider.createTodo(todo);
-                  Navigator.pop(context);
-                  widget.controller.clear();
-                } else if (widget.taskId!.isNotEmpty) {
-                  Todo todo = Todo(
-                      id: widget.taskId ?? '',
-                      title: widget.controller.text.trim());
-                  dbProvider.updateTodo(todo, widget.taskId!);
-                  Navigator.pop(context);
-                  widget.controller.clear();
-                }
-              },
+              onPressed: addOrUpdate,
               icon: const Icon(
                 Icons.add,
                 color: Colors.black,
@@ -57,5 +43,27 @@ class _MyDialogBoxState extends State<MyDialogBox> {
         ),
       ),
     );
+  }
+
+  void addOrUpdate() async {
+    final taskTitle = widget.controller.text.trim();
+    if (taskTitle.isEmpty) {
+      // Show error or return early if needed
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Todo text cannot be empty")),
+      );
+      return;
+    }
+    if (widget.task.id.isEmpty) {
+      Todo todo = Todo(id: '', title: taskTitle);
+      await context.read<DbProvider>().createTodo(todo, currentUser!.uid);
+    } else {
+      Todo todo = widget.task.copyWith(title: widget.controller.text.trim());
+      await context
+          .read<DbProvider>()
+          .updateTodo(todo, currentUser!.uid, widget.task.id);
+    }
+    Navigator.pop(context);
+    widget.controller.clear();
   }
 }

@@ -6,15 +6,35 @@ import 'package:provider/provider.dart';
 import '../components/my_button.dart';
 import '../components/my_text_field.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key, this.onTap});
-  final Function()? onTap;
+  final VoidCallback? onTap;
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey[300],
+        body: RegisterBody(
+          onTap: onTap,
+        ),
+      ),
+    );
+  }
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class RegisterBody extends StatefulWidget {
+  const RegisterBody({super.key, required this.onTap});
+  final VoidCallback? onTap;
+
+  @override
+  State<RegisterBody> createState() => _RegisterBodyState();
+}
+
+class _RegisterBodyState extends State<RegisterBody> {
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode passwordFocusNode = FocusNode();
   final FocusNode usernameFocusNode = FocusNode();
@@ -39,169 +59,164 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _showErrorSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.red,
+      ),
     );
   }
 
-  // Handle FirebaseAuth errors
-  String _handleAuthError(String errorCode) {
-    if (emailController.text.isEmpty) {
-      return 'Email cannot be empty';
-    } else if (passwordController.text.isEmpty) {
-      return 'Password cannot be empty';
-    } else if (passwordController.text.length < 8) {
-      return 'Password must be at least 8 characters';
-    } else if (passwordController.text != confirmPasswordController.text) {
-      return 'Passwords do not match';
+  Future signUpUser() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final username = usernameController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+      _showErrorSnackBar(context, 'All fields are required!');
+      return;
     }
-    switch (errorCode) {
-      case 'invalid-email':
-        return 'Invalid email';
-      case 'invalid-credential':
-        return 'Invalid credentials';
-      case 'user-disabled':
-        return 'User disabled';
-      case 'user-not-found':
-        return 'No user found';
-      case 'wrong-password':
-        return 'Incorrect password';
-      case 'email-already-in-use':
-        return 'This email is currently being used by another account';
-      default:
-        return 'Something went wrong';
+
+    if (password.length < 6) {
+      return _showErrorSnackBar(
+          context, 'Password must be at least 6 characters long');
+    }
+
+    if (password != confirmPassword) {
+      _showErrorSnackBar(context, 'Passwords do not match!');
+      return;
+    }
+
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      _showErrorSnackBar(context, 'Invalid email address!');
+      return;
+    }
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+      // Perform registration
+      await context.read<BaseAuth>().createUser(
+            email,
+            password,
+            username,
+            context
+          );
+      // Navigate to HomePage and hide loading indicator
+
+      if (mounted) {
+        Navigator.of(context).pop(); // Hide loading indicator
+        Navigator.of(context).pushNamed('/home');
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase errors
+      if (mounted) {
+        Navigator.of(context).pop(); // Hide loading indicator
+        String errorMessage = context.read<BaseAuth>().handleAuthError(e.code);
+        _showErrorSnackBar(context, errorMessage);
+      }
+    } catch (e) {
+      if (mounted) {
+        // Handle other unexpected errors
+        Navigator.of(context).pop(); // Hide loading indicator
+        _showErrorSnackBar(context, 'An unexpected error occurred');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        backgroundColor: Colors.grey[300],
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Center(
-              child: Column(
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(
+                height: 50,
+              ),
+              Icon(
+                Icons.message,
+                size: 50,
+                color: Colors.grey[700],
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Text(
+                'Sign up',
+                style: TextStyle(color: Colors.grey[700], fontSize: 24),
+              ),
+              const SizedBox(
+                height: 30,
+              ),
+              MyTextField(
+                fillColor: Colors.grey[200],
+                controller: usernameController,
+                focusNode: usernameFocusNode,
+                hintText: 'username',
+                obscureText: false,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              MyTextField(
+                fillColor: Colors.grey[200],
+                controller: emailController,
+                focusNode: emailFocusNode,
+                hintText: 'email',
+                obscureText: false,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              MyTextField(
+                fillColor: Colors.grey[200],
+                controller: passwordController,
+                focusNode: passwordFocusNode,
+                hintText: 'password',
+                obscureText: true,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              MyTextField(
+                fillColor: Colors.grey[200],
+                controller: confirmPasswordController,
+                focusNode: confirmPasswordFocusNode,
+                hintText: 'confirm password',
+                obscureText: true,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              MyButton(
+                text: 'Sign up',
+                onTap: () => signUpUser(),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(
-                    height: 50,
-                  ),
-                  Icon(
-                    Icons.message,
-                    size: 50,
-                    color: Colors.grey[700],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
                   Text(
-                    'Sign up',
-                    style: TextStyle(color: Colors.grey[700], fontSize: 24),
+                    'Already a member?',
+                    style: TextStyle(color: Colors.grey[700]),
                   ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  MyTextField(
-                    fillColor: Colors.grey[200],
-                    controller: usernameController,
-                    focusNode: usernameFocusNode,
-                    hintText: 'username',
-                    obscureText: false,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MyTextField(
-                    fillColor: Colors.grey[200],
-                    controller: emailController,
-                    focusNode: emailFocusNode,
-                    hintText: 'email',
-                    obscureText: false,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MyTextField(
-                    fillColor: Colors.grey[200],
-                    controller: passwordController,
-                    focusNode: passwordFocusNode,
-                    hintText: 'password',
-                    obscureText: true,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MyTextField(
-                    fillColor: Colors.grey[200],
-                    controller: confirmPasswordController,
-                    focusNode: confirmPasswordFocusNode,
-                    hintText: 'confirm password',
-                    obscureText: true,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MyButton(
-                    text: 'Sign up',
-                    onTap: () async {
-                      final email = emailController.text.trim();
-                      final password = passwordController.text.trim();
-                      final username = usernameController.text.trim();
-                      try {
-                        // Show loading indicator
-                        showDialog(
-                          context: context,
-                          builder: (context) =>
-                              const Center(child: CircularProgressIndicator()),
-                        );
-                        // Perform registration
-                        await context.read<BaseAuth>().createUser(
-                              email,
-                              password,
-                              username,
-                            );
-                        // Navigate to HomePage and hide loading indicator
-
-                        Navigator.of(context).pop(); // Hide loading indicator
-                        Navigator.of(context).pushNamed('/home');
-                      } on FirebaseAuthException catch (e) {
-                        // Handle Firebase errors
-                        Navigator.of(context).pop(); // Hide loading indicator
-                        String errorMessage = _handleAuthError(e.code);
-                        _showErrorSnackBar(context, errorMessage);
-                      } catch (e) {
-                        // Handle other unexpected errors
-                        Navigator.of(context).pop(); // Hide loading indicator
-                        _showErrorSnackBar(
-                            context, 'An unexpected error occurred');
-                      }
-                    },
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already a member?',
-                        style: TextStyle(color: Colors.grey[700]),
-                      ),
-                      TextButton(
-                        onPressed: widget.onTap,
-                        child: Text(
-                          'Log in',
-                          style: TextStyle(color: Colors.grey[900]),
-                        ),
-                      )
-                    ],
+                  TextButton(
+                    onPressed: widget.onTap,
+                    child: Text(
+                      'Log in',
+                      style: TextStyle(color: Colors.grey[900]),
+                    ),
                   )
                 ],
-              ),
-            ),
+              )
+            ],
           ),
         ),
       ),

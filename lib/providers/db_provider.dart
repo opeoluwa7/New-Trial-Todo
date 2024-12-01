@@ -1,29 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:myapp/model/todo_model.dart';
 import 'package:myapp/model/user_model.dart';
 
-class DbProvider {
+class DbProvider extends ChangeNotifier {
   final users = FirebaseFirestore.instance.collection('users');
-  final todos = FirebaseFirestore.instance.collection('todos');
 
-  Future createUser(UserModel user) async {
-    final Map<String, dynamic> userData = user.toMap();
-    //await users.add(userData);
-    await users.doc(user.id).set(userData);
-  }
-
-  /*Stream<QuerySnapshot> fetchUsers() {
-    try {
-      final userStream = users.snapshots();
-
-      return userStream;
-    } catch (e) {
-      rethrow;
-    }
-  }*/
 
   Future<UserModel?> fetchUserData(String userId) async {
-    final DocumentSnapshot snapshot = await users.doc(userId).get();
+    final DocumentSnapshot snapshot = await users.doc(userId).collection('userInfo').doc('info').get();
 
     if (snapshot.exists) {
       Map<String, dynamic> userData = snapshot.data() as Map<String, dynamic>;
@@ -54,16 +39,20 @@ class DbProvider {
 
   void deleteUser(String id) async {
     await users.doc(id).delete();
+    notifyListeners();
   }
   //_________________________________________________________________________________
 
-  Future createTodo(Todo todo) async {
-    await todos.add(todo.toMap());
+  Future createTodo(Todo todo, String userId) async {
+    final todoId = users.doc(userId).collection('todos').doc().id;
+    final newTodo = todo.copyWith(id: todoId);
+    await users.doc(userId).collection('todos').doc(todoId).set(newTodo.toMap());
+    notifyListeners();
   }
 
-  Stream<QuerySnapshot> fetchTodos() {
+  Stream<QuerySnapshot> fetchTodos(String userId) {
     try {
-      final todoStream = todos.snapshots();
+      final todoStream = users.doc(userId).collection('todos').snapshots();
 
       return todoStream;
     } catch (e) {
@@ -71,11 +60,32 @@ class DbProvider {
     }
   }
 
-  Future updateTodo(Todo todo, String id) async {
-    await todos.doc(id).update(todo.toMap());
+  Future updateTodo(Todo todo, String userId, todoId) async {
+    if (todoId.isEmpty) {
+      print("Error: todoId is empty");
+      return; // Prevent the method from proceeding
+    }
+    await users
+        .doc(userId)
+        .collection('todos')
+        .doc(todoId)
+        .update(todo.toMap());
+    notifyListeners();
   }
 
-  Future deleteTodo(String id) async {
-    await todos.doc(id).delete();
+  Future deleteTodo(String userId, String todoId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('todos')
+          .doc(todoId)
+          .delete();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error deleting todo: $e");
+    }
+    //await users.doc(userId).collection('todos').doc(todoId).delete();
+    //notifyListeners();
   }
 }

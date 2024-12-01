@@ -163,3 +163,22 @@
                 }
               }
             })*/
+
+              //final todos = FirebaseFirestore.instance.collection('todos');
+
+  /*Future createUser(UserModel user) async {
+    final Map<String, dynamic> userData = user.toMap();
+    //await users.add(userData);
+    await users.doc(user.id).collection('userInfo').doc('info').set(userData);
+    notifyListeners();
+  }*/
+
+  /*Stream<QuerySnapshot> fetchUsers() {
+    try {
+      final userStream = users.snapshots();
+
+      return userStream;
+    } catch (e) {
+      rethrow;
+    }
+  }*/

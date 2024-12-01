@@ -16,13 +16,9 @@ class MyNewListTile extends StatelessWidget {
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
         ),
         Container(
-            //alignment: Alignment.centerLeft,
             padding: const EdgeInsets.symmetric(
               horizontal: 10,
             ),
-            //width: 170,
-            //height: 50,
-            //padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               border: Border.all(width: 1, color: Colors.grey),
               borderRadius: BorderRadius.circular(10),
@@ -31,7 +27,6 @@ class MyNewListTile extends StatelessWidget {
               controller: controller,
               decoration: const InputDecoration(
                 border: InputBorder.none,
-                //labelText: header,
               ),
             )),
       ],

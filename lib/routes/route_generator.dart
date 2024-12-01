@@ -13,7 +13,7 @@ class RouteGenerator {
       case '/home':
         return MaterialPageRoute(builder: (_) => const HomePage());
       case '/settings':
-        return MaterialPageRoute(builder: (_) =>  SettingsPage());
+        return MaterialPageRoute(builder: (_) =>  const SettingsPage());
       default:
         return _errorRoute();
     }
