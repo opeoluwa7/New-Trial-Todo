@@ -15,19 +15,28 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final DbProvider dbProvider = DbProvider();
-  final BaseAuth baseAuth = BaseAuth();
   final _titleController = TextEditingController();
   final currentUser = FirebaseAuth.instance.currentUser;
 
   @override
+  void dispose() {
+    super.dispose();
+    _titleController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[300],
-      appBar: const CustomAppBar(),
-      body: const HomePageBody(),
-      floatingActionButton: MyFAB(
-        controller: _titleController,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey[300],
+        appBar: const CustomAppBar(),
+        body: const HomePageBody(),
+        floatingActionButton: MyFAB(
+          controller: _titleController,
+        ),
       ),
     );
   }
@@ -86,16 +95,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         PopupMenuButton(
             itemBuilder: (context) => [
-                  PopupMenuItem(
-                    child: TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          'Home',
-                          style: TextStyle(color: Colors.grey[900]),
-                        )),
-                  ),
+              //I removed the home popupitem because I am using a focus scope to achive that same result
                   PopupMenuItem(
                     child: TextButton(
                         onPressed: () => moveToSettings(context),
