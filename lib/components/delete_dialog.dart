@@ -12,6 +12,17 @@ class DeleteDialog extends StatelessWidget {
   final BaseAuth baseAuth = BaseAuth();
   final String id;
 
+  void deleteUser(context) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      await currentUser.delete();
+    }
+    baseAuth.signOut();
+    //Navigator.pop(context);
+    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    dbProvider.deleteUser(id);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -19,7 +30,7 @@ class DeleteDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Are you sure you want to delete this item?'),
+          const Text('Are you sure you want to delete your account?'),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -34,15 +45,7 @@ class DeleteDialog extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () async {
-                  final currentUser = FirebaseAuth.instance.currentUser;
-                  if (currentUser != null) {
-                    await currentUser.delete();
-                  }
-                  baseAuth.signOut();
-                  //Navigator.pop(context);
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, '/', (route) => false);
-                  dbProvider.deleteUser(id);
+                  deleteUser(context);
                 },
                 child:
                     const Text('delete', style: TextStyle(color: Colors.red)),

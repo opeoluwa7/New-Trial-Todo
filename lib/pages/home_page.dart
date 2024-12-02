@@ -160,7 +160,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     child: Text('Incompleted Tasks'),
                   ),
                   ...incompletedTasks.map((task) {
-                    return MyListTile(
+                    return MyCheckboxListTile(
                       task: task,
                       controller: titleController,
                     );
@@ -176,7 +176,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     child: Text('Completed Tasks'),
                   ),
                   ...completedTasks.map((task) {
-                    return MyListTile(
+                    return MyCheckboxListTile(
                       task: task,
                       controller: titleController,
                     );

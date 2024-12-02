@@ -7,16 +7,17 @@ import 'package:myapp/model/todo_model.dart';
 import 'package:myapp/providers/db_provider.dart';
 import 'package:provider/provider.dart';
 
-class MyListTile extends StatefulWidget {
-  const MyListTile({super.key, required this.task, required this.controller});
+class MyCheckboxListTile extends StatefulWidget {
+  const MyCheckboxListTile(
+      {super.key, required this.task, required this.controller});
   final Todo task;
   final TextEditingController controller;
 
   @override
-  State<MyListTile> createState() => _MyListTileState();
+  State<MyCheckboxListTile> createState() => _MyCheckboxListTileState();
 }
 
-class _MyListTileState extends State<MyListTile> {
+class _MyCheckboxListTileState extends State<MyCheckboxListTile> {
   bool get isChecked => widget.task.isCompleted;
   final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -28,7 +29,43 @@ class _MyListTileState extends State<MyListTile> {
   }
 
   void deleteTodo() {
+    Navigator.pop(context);
     context.read<DbProvider>().deleteTodo(currentUser!.uid, widget.task.id);
+  }
+
+  void deleteTodoMethod() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Are you sure you want to delete this task?'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                      TextButton(
+                          onPressed: () {
+                            deleteTodo();
+                          },
+                          child: const Text(
+                            'Delete',
+                            style: TextStyle(color: Colors.black),
+                          )),
+                    ],
+                  )
+                ],
+              ),
+            ));
   }
 
   void editDialog() {
@@ -58,7 +95,7 @@ class _MyListTileState extends State<MyListTile> {
           color: Colors.red,
           icon: Icons.delete,
           onPressed: (context) {
-            deleteTodo();
+            deleteTodoMethod();
           },
         )
       ]),
